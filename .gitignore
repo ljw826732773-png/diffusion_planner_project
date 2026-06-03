@@ -1,0 +1,17 @@
+work/
+*.pth
+*.pt
+*.ckpt
+checkpoints/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.log
+outputs/
+nuplan_exp/
+
