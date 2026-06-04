@@ -255,21 +255,46 @@ results/inference_benchmark.png
 
 ## 8. nuPlan 数据集接入
 
-当前没有提交 nuPlan 数据集。完整 closed-loop simulation 需要配置:
+当前没有提交 nuPlan 数据集，仓库只保存代码、文档、脚本和轻量结果图。完整 closed-loop simulation 需要在本机配置数据路径，推荐放在非 C 盘:
 
 ```powershell
-$env:NUPLAN_DATA_ROOT="D:\data\nuplan"
-$env:NUPLAN_MAPS_ROOT="D:\data\nuplan\maps"
-$env:NUPLAN_EXP_ROOT="D:\data\nuplan\exp"
+$env:NUPLAN_DATA_ROOT="D:\nuplan-data\dataset"
+$env:NUPLAN_MAPS_ROOT="D:\nuplan-data\dataset\maps"
+$env:NUPLAN_EXP_ROOT="D:\nuplan-data\exp"
 ```
+
+下载 nuPlan mini 和地图:
+
+```powershell
+scripts\download_nuplan_mini.ps1
+```
+
+默认会优先下载到 `D:\nuplan-data\dataset`，避免把 10GB 级别数据放进项目目录或 C 盘。也可以手动指定:
+
+```powershell
+scripts\download_nuplan_mini.ps1 -DatasetRoot "D:\nuplan-data\dataset"
+```
+
+这个脚本会做三件事:
+
+- 下载 `nuplan-maps-v1.0.zip` 和 `nuplan-v1.1_mini.zip`。
+- 校验已下载文件大小，支持断点续传，已有完整 zip 不会重下。
+- 适配 AWS mini zip 的解压结构: 如果 `.db` 出现在 `data\cache\mini`，会创建 junction 到 `nuplan-v1.1\splits\mini`，不重复复制 8GB 数据。
+
+当前本地已验证的数据状态:
+
+- `D:\nuplan-data\dataset\data\cache\mini`: 64 个 mini `.db`
+- `D:\nuplan-data\dataset\nuplan-v1.1\splits\mini`: junction，指向上面的 mini 数据
+- `D:\nuplan-data\dataset\maps`: 4 个城市地图和 metadata
+- `D:\nuplan-data\exp`: 仿真输出目录
 
 检查数据是否就绪:
 
 ```powershell
 scripts\check_nuplan_data.ps1 `
-  -NuplanDataRoot "D:\data\nuplan" `
-  -NuplanMapsRoot "D:\data\nuplan\maps" `
-  -NuplanExpRoot "D:\data\nuplan\exp"
+  -NuplanDataRoot "D:\nuplan-data\dataset" `
+  -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
+  -NuplanExpRoot "D:\nuplan-data\exp"
 ```
 
 检查内容:
@@ -283,10 +308,33 @@ closed-loop simulation 模板:
 
 ```powershell
 scripts\run_simulation_template.ps1 `
-  -NuplanDataRoot "D:\data\nuplan" `
-  -NuplanMapsRoot "D:\data\nuplan\maps" `
-  -NuplanExpRoot "D:\data\nuplan\exp"
+  -NuplanDataRoot "D:\nuplan-data\dataset" `
+  -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
+  -NuplanExpRoot "D:\nuplan-data\exp" `
+  -ScenarioBuilder "nuplan_mini" `
+  -Split "one_of_each_scenario_type" `
+  -Worker "sequential" `
+  -ExperimentUid "dp/mini/model"
 ```
+
+Windows 下建议保持 `ExperimentUid` 较短，避免 simulation log 路径触发 260 字符限制。
+
+本地 mini closed-loop 烟测结果:
+
+| 项目 | 结果 |
+| --- | --- |
+| challenge | `closed_loop_nonreactive_agents` |
+| scenario_filter | `one_of_each_scenario_type` |
+| 场景数 | 1 |
+| 成功 / 失败 | 1 / 0 |
+| scenario type | `near_multiple_vehicles` |
+| scenario token | `1f151e15c9cf5c81` |
+| 仿真 duration | 54.19 s |
+| compute trajectory mean runtime | 0.328 s |
+
+记录见:
+
+- [results/mini_simulation_smoke_test.md](results/mini_simulation_smoke_test.md)
 
 更多说明见:
 
@@ -389,4 +437,3 @@ year={2025},
 url={https://openreview.net/forum?id=wM2sfVgMDH}
 }
 ```
-
