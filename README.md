@@ -336,9 +336,45 @@ Windows 下建议保持 `ExperimentUid` 较短，避免 simulation log 路径触
 
 - [results/mini_simulation_smoke_test.md](results/mini_simulation_smoke_test.md)
 
+小规模 mini 评估:
+
+```powershell
+conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
+  -File .\outputs\diffusion_planner_project\scripts\run_mini_eval.ps1 `
+  -NuplanDataRoot "D:\nuplan-data\dataset" `
+  -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
+  -NuplanExpRoot "D:\nuplan-data\exp" `
+  -ScenarioBuilder "nuplan_mini" `
+  -ScenarioFilter "one_of_each_scenario_type" `
+  -Worker "sequential" `
+  -LimitTotalScenarios 3 `
+  -ExperimentUid "dp/mini3/model" `
+  -SummaryPrefix "mini_eval"
+```
+
+3 场景 mini closed-loop 评估结果:
+
+| 项目 | 结果 |
+| --- | --- |
+| challenge | `closed_loop_nonreactive_agents` |
+| scenario_filter | `one_of_each_scenario_type` |
+| 场景数 | 3 |
+| 成功 / 失败 | 3 / 0 |
+| final weighted score | 0.905 |
+| mean simulation duration | 51.502 s |
+| mean trajectory runtime | 0.3074 s |
+
+轻量结果文件:
+
+- [results/mini_eval_summary.md](results/mini_eval_summary.md)
+- [results/mini_eval_runner_report.csv](results/mini_eval_runner_report.csv)
+- [results/mini_eval_aggregated_metrics.csv](results/mini_eval_aggregated_metrics.csv)
+- [results/mini_eval_metric_scores.csv](results/mini_eval_metric_scores.csv)
+
 更多说明见:
 
 - [docs/nuplan_data_setup.md](docs/nuplan_data_setup.md)
+- [docs/mini_eval_workflow.md](docs/mini_eval_workflow.md)
 
 ## 9. 模型结构理解
 

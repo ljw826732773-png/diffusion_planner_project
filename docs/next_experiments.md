@@ -4,14 +4,22 @@
 
 目标: 从 synthetic forward 升级到真实场景验证。
 
-需要:
+当前状态:
 
-- 下载 nuPlan mini 或 val14 子集
-- 配置 `NUPLAN_DATA_ROOT`
-- 配置 `NUPLAN_MAPS_ROOT`
-- 配置 `NUPLAN_EXP_ROOT`
+- 已下载 nuPlan mini 和 maps 到 `D:\nuplan-data`，没有放在 C 盘。
+- 已配置 `NUPLAN_DATA_ROOT`、`NUPLAN_MAPS_ROOT`、`NUPLAN_EXP_ROOT`。
+- 已完成 1 场景 closed-loop smoke test。
+- 已完成 3 场景 mini closed-loop evaluation。
+- 已生成 `results/mini_eval_summary.md`、runner report、aggregated metrics 和 metric scores。
 
-产出:
+当前结果:
+
+- 成功 / 失败: 3 / 0
+- final weighted score: 0.905
+- mean simulation duration: 51.502 s
+- mean trajectory runtime: 0.3074 s
+
+后续产出:
 
 - 至少 5 个真实 scenario 的 closed-loop simulation 结果
 - 轨迹截图

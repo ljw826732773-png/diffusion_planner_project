@@ -1,0 +1,8 @@
+scenario,log_name,scenario_type,num_scenarios,planner_name,aggregator_type,corners_in_drivable_area,drivable_area_compliance,driving_direction_compliance,ego_is_comfortable,ego_is_making_progress,ego_jerk,ego_lane_change,ego_lat_acceleration,ego_lon_acceleration,ego_lon_jerk,ego_progress_along_expert_route,ego_yaw_acceleration,ego_yaw_rate,no_ego_at_fault_collisions,speed_limit_compliance,time_to_collision_within_bound,score
+1f151e15c9cf5c81,2021.06.08.14.35.24_veh-26_02555_03004,near_multiple_vehicles,,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,0.875
+aa8237ebd54f5a0b,2021.05.12.23.36.44_veh-35_01133_01535,starting_protected_noncross_turn,,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,1.0
+6e256d585b245983,2021.06.09.14.58.55_veh-35_01894_02311,starting_unprotected_cross_turn,,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,0.36000515895595286,1.0,0.8400012897389882
+near_multiple_vehicles,,near_multiple_vehicles,1.0,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,0.875
+starting_protected_noncross_turn,,starting_protected_noncross_turn,1.0,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,1.0
+starting_unprotected_cross_turn,,starting_unprotected_cross_turn,1.0,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,0.36000515895595286,1.0,0.8400012897389882
+final_score,,final_score,3.0,diffusion_planner,weighted_average,,1.0,1.0,0.6666666666666666,1.0,,,,,,1.0,,,1.0,0.786668386318651,1.0,0.9050004299129961
