@@ -9,19 +9,19 @@
 - 已下载 nuPlan mini 和 maps 到 `D:\nuplan-data`，没有放在 C 盘。
 - 已配置 `NUPLAN_DATA_ROOT`、`NUPLAN_MAPS_ROOT`、`NUPLAN_EXP_ROOT`。
 - 已完成 1 场景 closed-loop smoke test。
-- 已完成 3 场景 mini closed-loop evaluation。
+- 已完成 5 场景 mini closed-loop evaluation。
 - 已生成 `results/mini_eval_summary.md`、runner report、aggregated metrics 和 metric scores。
 
 当前结果:
 
-- 成功 / 失败: 3 / 0
-- final weighted score: 0.905
-- mean simulation duration: 51.502 s
-- mean trajectory runtime: 0.3074 s
+- 成功 / 失败: 5 / 0
+- final weighted score: 0.9254
+- mean simulation duration: 134.7063 s
+- mean trajectory runtime: 0.8146 s
 
 后续产出:
 
-- 至少 5 个真实 scenario 的 closed-loop simulation 结果
+- 10-15 个真实 scenario 的 closed-loop simulation 结果
 - 轨迹截图
 - 失败案例分析
 

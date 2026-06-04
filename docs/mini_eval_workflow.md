@@ -27,15 +27,15 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
   -ScenarioBuilder "nuplan_mini" `
   -ScenarioFilter "one_of_each_scenario_type" `
   -Worker "sequential" `
-  -LimitTotalScenarios 3 `
-  -ExperimentUid "dp/mini3/model" `
+  -LimitTotalScenarios 5 `
+  -ExperimentUid "dp/mini5/model" `
   -SummaryPrefix "mini_eval"
 ```
 
 Raw nuPlan artifacts stay outside the repository:
 
 ```text
-D:\nuplan-data\exp\exp\simulation\closed_loop_nonreactive_agents\dp\mini3\model
+D:\nuplan-data\exp\exp\simulation\closed_loop_nonreactive_agents\dp\mini5\model
 ```
 
 Only lightweight summaries are committed:
@@ -56,7 +56,7 @@ without rerunning scenarios:
 conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
   -File .\outputs\diffusion_planner_project\scripts\run_mini_eval.ps1 `
   -NuplanExpRoot "D:\nuplan-data\exp" `
-  -ExperimentUid "dp/mini3/model" `
+  -ExperimentUid "dp/mini5/model" `
   -SummaryPrefix "mini_eval" `
   -SkipSimulation
 ```
@@ -65,7 +65,7 @@ Or call the summarizer directly:
 
 ```powershell
 python .\outputs\diffusion_planner_project\scripts\summarize_nuplan_results.py `
-  --run-root "D:\nuplan-data\exp\exp\simulation\closed_loop_nonreactive_agents\dp\mini3\model" `
+  --run-root "D:\nuplan-data\exp\exp\simulation\closed_loop_nonreactive_agents\dp\mini5\model" `
   --output-dir ".\outputs\diffusion_planner_project\results" `
   --prefix "mini_eval"
 ```
@@ -76,23 +76,25 @@ python .\outputs\diffusion_planner_project\scripts\summarize_nuplan_results.py `
 | --- | --- |
 | challenge | `closed_loop_nonreactive_agents` |
 | scenario filter | `one_of_each_scenario_type` |
-| scenarios | `3` |
-| succeeded / failed | `3 / 0` |
-| final weighted score | `0.905` |
-| mean simulation duration | `51.502 s` |
-| mean trajectory runtime | `0.3074 s` |
+| scenarios | `5` |
+| succeeded / failed | `5 / 0` |
+| final weighted score | `0.9254` |
+| mean simulation duration | `134.7063 s` |
+| mean trajectory runtime | `0.8146 s` |
 
 Scenario-level scores:
 
 | scenario_type | score |
 | --- | ---: |
+| `accelerating_at_traffic_light_without_lead` | 0.864 |
 | `near_multiple_vehicles` | 0.875 |
-| `starting_unprotected_cross_turn` | 0.840 |
+| `on_pickup_dropoff` | 0.888 |
 | `starting_protected_noncross_turn` | 1.000 |
+| `stopping_at_stop_sign_with_lead` | 1.000 |
 
 ## How to scale
 
-- Increase `-LimitTotalScenarios` to 5, 10, or 15 for broader mini coverage.
+- Increase `-LimitTotalScenarios` to 10 or 15 for broader mini coverage.
 - Switch `-Worker` from `sequential` to `ray_distributed` when multiprocessing is stable on the target machine.
 - Keep `-ExperimentUid` short on Windows to avoid long-path issues in simulation log output.
 - For paper-level claims, move from mini to the official full benchmark split and report the official challenge metrics.

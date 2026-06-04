@@ -7,8 +7,8 @@ param(
     [string]$ScenarioFilter = "one_of_each_scenario_type",
     [string]$Challenge = "closed_loop_nonreactive_agents",
     [string]$Worker = "sequential",
-    [int]$LimitTotalScenarios = 3,
-    [string]$ExperimentUid = "dp/mini3/model",
+    [int]$LimitTotalScenarios = 5,
+    [string]$ExperimentUid = "dp/mini5/model",
     [string]$SummaryPrefix = "mini_eval",
     [switch]$SkipSimulation
 )

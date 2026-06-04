@@ -347,22 +347,22 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
   -ScenarioBuilder "nuplan_mini" `
   -ScenarioFilter "one_of_each_scenario_type" `
   -Worker "sequential" `
-  -LimitTotalScenarios 3 `
-  -ExperimentUid "dp/mini3/model" `
+  -LimitTotalScenarios 5 `
+  -ExperimentUid "dp/mini5/model" `
   -SummaryPrefix "mini_eval"
 ```
 
-3 场景 mini closed-loop 评估结果:
+5 场景 mini closed-loop 评估结果:
 
 | 项目 | 结果 |
 | --- | --- |
 | challenge | `closed_loop_nonreactive_agents` |
 | scenario_filter | `one_of_each_scenario_type` |
-| 场景数 | 3 |
-| 成功 / 失败 | 3 / 0 |
-| final weighted score | 0.905 |
-| mean simulation duration | 51.502 s |
-| mean trajectory runtime | 0.3074 s |
+| 场景数 | 5 |
+| 成功 / 失败 | 5 / 0 |
+| final weighted score | 0.9254 |
+| mean simulation duration | 134.7063 s |
+| mean trajectory runtime | 0.8146 s |
 
 轻量结果文件:
 
