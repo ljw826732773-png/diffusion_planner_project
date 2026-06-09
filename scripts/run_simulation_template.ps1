@@ -8,7 +8,8 @@ param(
     [string]$Challenge = "closed_loop_nonreactive_agents",
     [string]$Worker = "sequential",
     [int]$LimitTotalScenarios = 1,
-    [string]$ExperimentUid = "dp/mini/model"
+    [string]$ExperimentUid = "dp/mini/model",
+    [string]$Planner = "diffusion_planner"
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,7 +54,7 @@ $CkptFile = Join-Path $DiffusionPlannerRoot "checkpoints\model.pth"
 
 $SimulationArgs = @(
     "+simulation=$Challenge",
-    "planner=diffusion_planner",
+    "planner=$Planner",
     "planner.diffusion_planner.config.args_file=$ArgsFile",
     "planner.diffusion_planner.ckpt_path=$CkptFile",
     "scenario_builder=$ScenarioBuilder",

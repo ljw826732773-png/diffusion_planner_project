@@ -68,7 +68,7 @@ def plot(aggregated_path: Path, runner_path: Path, output_path: Path) -> None:
     axes[2].set_yticks(list(y_positions), labels)
     axes[2].grid(axis="x", linewidth=0.4, alpha=0.35)
 
-    fig.suptitle("nuPlan mini closed-loop evaluation (5 scenarios)", y=1.02, fontsize=13)
+    fig.suptitle(f"nuPlan mini closed-loop evaluation ({len(labels)} scenarios)", y=1.02, fontsize=13)
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, bbox_inches="tight")

@@ -28,14 +28,14 @@ eval 模式下的完整采样推理链路。它会走 `dpm_sampler`，默认 10 
 
 ```powershell
 conda activate diffusion_planner
-python outputs\diffusion_planner_project\scripts\benchmark_inference.py
+python scripts\benchmark_inference.py
 ```
 
 输出:
 
 ```text
-outputs\diffusion_planner_project\results\inference_benchmark.csv
-outputs\diffusion_planner_project\results\inference_benchmark.png
+results\inference_benchmark.csv
+results\inference_benchmark.png
 ```
 
 ## 当前结果
@@ -50,7 +50,7 @@ torch 2.0.0+cu118
 运行命令:
 
 ```powershell
-python outputs\diffusion_planner_project\scripts\benchmark_inference.py --batch-sizes 1,2,4 --iterations 50 --sampling-iterations 20
+python scripts\benchmark_inference.py --batch-sizes 1,2,4 --iterations 50 --sampling-iterations 20
 ```
 
 | Mode | Batch | Mean Latency | Calls/s | Samples/s | Peak CUDA Memory |

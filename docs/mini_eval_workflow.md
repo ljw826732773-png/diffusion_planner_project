@@ -20,7 +20,7 @@ Run from the projectized workspace:
 
 ```powershell
 conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
-  -File .\outputs\diffusion_planner_project\scripts\run_mini_eval.ps1 `
+  -File .\scripts\run_mini_eval.ps1 `
   -NuplanDataRoot "D:\nuplan-data\dataset" `
   -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
   -NuplanExpRoot "D:\nuplan-data\exp" `
@@ -55,7 +55,7 @@ without rerunning scenarios:
 
 ```powershell
 conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
-  -File .\outputs\diffusion_planner_project\scripts\run_mini_eval.ps1 `
+  -File .\scripts\run_mini_eval.ps1 `
   -NuplanExpRoot "D:\nuplan-data\exp" `
   -ExperimentUid "dp/mini5/model" `
   -SummaryPrefix "mini_eval" `
@@ -65,19 +65,19 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 Or call the summarizer directly:
 
 ```powershell
-python .\outputs\diffusion_planner_project\scripts\summarize_nuplan_results.py `
+python .\scripts\summarize_nuplan_results.py `
   --run-root "D:\nuplan-data\exp\exp\simulation\closed_loop_nonreactive_agents\dp\mini5\model" `
-  --output-dir ".\outputs\diffusion_planner_project\results" `
+  --output-dir ".\results" `
   --prefix "mini_eval"
 ```
 
 Generate the result figure from committed CSV files:
 
 ```powershell
-python .\outputs\diffusion_planner_project\scripts\plot_mini_eval.py `
-  --aggregated ".\outputs\diffusion_planner_project\results\mini_eval_aggregated_metrics.csv" `
-  --runner ".\outputs\diffusion_planner_project\results\mini_eval_runner_report.csv" `
-  --output ".\outputs\diffusion_planner_project\results\mini_eval_score_runtime.png"
+python .\scripts\plot_mini_eval.py `
+  --aggregated ".\results\mini_eval_aggregated_metrics.csv" `
+  --runner ".\results\mini_eval_runner_report.csv" `
+  --output ".\results\mini_eval_score_runtime.png"
 ```
 
 ## Current local result

@@ -1,0 +1,6 @@
+rank,scenario,scenario_type,log_name,score,limiting_metrics
+1,6e256d585b245983,starting_unprotected_cross_turn,2021.06.09.14.58.55_veh-35_01894_02311,0.838567833808717,speed_limit_compliance=0.3543
+2,99ca544752f255ad,accelerating_at_traffic_light_without_lead,2021.05.12.23.36.44_veh-35_01133_01535,0.8643356645848171,ego_is_comfortable=0.0000; ego_progress_along_expert_route=0.9659
+3,1f151e15c9cf5c81,near_multiple_vehicles,2021.06.08.14.35.24_veh-26_02555_03004,0.875,ego_is_comfortable=0.0000
+4,d0b68e15688c58ad,on_pickup_dropoff,2021.05.12.23.36.44_veh-35_01133_01535,0.8892463099333667,ego_progress_along_expert_route=0.9635; speed_limit_compliance=0.6026
+5,a3a4c3242d345082,starting_left_turn,2021.05.25.14.16.10_veh-35_01690_02183,0.9236830165303654,ego_progress_along_expert_route=0.7930; speed_limit_compliance=0.9535

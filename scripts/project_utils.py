@@ -24,6 +24,10 @@ def workspace_root() -> Path:
     return Path(os.environ.get("DP_WORKSPACE_ROOT", default_root)).resolve()
 
 
+def project_root() -> Path:
+    return Path(os.environ.get("DP_PROJECT_ROOT", Path(__file__).resolve().parents[1])).resolve()
+
+
 def diffusion_repo() -> Path:
     default_repo = workspace_root() / "work" / "Diffusion-Planner"
     return Path(os.environ.get("DP_REPO_ROOT", default_repo)).resolve()

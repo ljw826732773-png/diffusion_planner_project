@@ -17,8 +17,8 @@ from project_utils import (
     build_synthetic_inputs,
     checkpoint_paths,
     prepare_imports,
+    project_root,
     strip_module_prefix,
-    workspace_root,
 )
 
 
@@ -165,6 +165,8 @@ def main() -> None:
     parser.add_argument("--warmup", type=int, default=2)
     parser.add_argument("--iterations", type=int, default=20)
     parser.add_argument("--sampling-iterations", type=int, default=5)
+    parser.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
+    parser.add_argument("--output-prefix", default="inference_benchmark")
     args = parser.parse_args()
 
     repo = prepare_imports()
@@ -174,7 +176,12 @@ def main() -> None:
 
     paths = checkpoint_paths(repo)
     cfg = Config(str(paths["args"]), None)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    else:
+        device = args.device
+    if device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA requested but torch.cuda.is_available() is false")
     cfg.device = device
 
     model = Diffusion_Planner(cfg).to(device)
@@ -195,9 +202,9 @@ def main() -> None:
                 f"peak_mem={result['peak_memory_mb']:.1f}MB"
             )
 
-    results_dir = workspace_root() / "outputs" / "diffusion_planner_project" / "results"
-    csv_path = results_dir / "inference_benchmark.csv"
-    png_path = results_dir / "inference_benchmark.png"
+    results_dir = project_root() / "results"
+    csv_path = results_dir / f"{args.output_prefix}.csv"
+    png_path = results_dir / f"{args.output_prefix}.png"
     write_csv(rows, csv_path)
     plot_results(rows, png_path)
     print(f"saved_csv={csv_path}")

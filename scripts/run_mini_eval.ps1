@@ -10,6 +10,7 @@ param(
     [int]$LimitTotalScenarios = 5,
     [string]$ExperimentUid = "dp/mini5/model",
     [string]$SummaryPrefix = "mini_eval",
+    [string]$Planner = "diffusion_planner",
     [switch]$SkipSimulation
 )
 
@@ -62,7 +63,8 @@ if (-not $SkipSimulation) {
         -Challenge $Challenge `
         -Worker $Worker `
         -LimitTotalScenarios $LimitTotalScenarios `
-        -ExperimentUid $ExperimentUid
+        -ExperimentUid $ExperimentUid `
+        -Planner $Planner
 }
 
 python "$PSScriptRoot\summarize_nuplan_results.py" `

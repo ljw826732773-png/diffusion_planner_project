@@ -1,0 +1,2 @@
+mode,batch_size,iterations,warmup,device,torch,mean_ms,median_ms,min_ms,max_ms,calls_per_second,samples_per_second,peak_memory_mb
+denoise_forward,1,3,1,cpu,2.0.0+cu118,133.23150000000024,136.17409999999984,127.32440000000089,136.19599999999997,7.505732503199305,7.505732503199305,0.0
