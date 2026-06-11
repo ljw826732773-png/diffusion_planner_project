@@ -73,6 +73,20 @@ Interpretation:
 - Scale `1.0` further degrades aggregate collision and TTC scores, so stronger guidance is not safer under this setup.
 - These results are diagnostics for the mini subset, not full benchmark conclusions.
 
+## Stop-sign trajectory inspection
+
+The failing stop-sign scenario was inspected by overlaying the executed ego trajectory from baseline and all guidance scale runs.
+
+| Run | Score | Executed path length | Avg error to expert | Endpoint error |
+| --- | ---: | ---: | ---: | ---: |
+| baseline | 1.0000 | 7.162 m | 1.388 m | 1.965 m |
+| scale 0.1 | 1.0000 | 7.382 m | 1.560 m | 2.182 m |
+| scale 0.3 | 0.0000 | 8.699 m | 2.740 m | 3.489 m |
+| scale 0.5 | 0.0000 | 17.105 m | 7.971 m | 11.879 m |
+| scale 1.0 | 0.0000 | 20.768 m | 9.752 m | 15.423 m |
+
+This gives a useful failure hypothesis: stronger collision guidance pushes the executed path much farther than the successful baseline/scale-0.1 runs. The static plot does not prove the exact collision partner or frame, but it narrows the next debug target to guidance weighting, timing, and stop-sign interaction behavior.
+
 Outputs:
 
 - `results/guidance_mini5_eval_summary.md`
@@ -83,7 +97,10 @@ Outputs:
 - `results/guidance_scale_sweep.md`
 - `results/guidance_scale_sweep.csv`
 - `results/guidance_scale_sweep.png`
+- `results/guidance_stop_sign_trajectory_comparison.md`
+- `results/guidance_stop_sign_trajectory_comparison.csv`
+- `results/guidance_stop_sign_trajectory_comparison.png`
 
 ## Next boundary
 
-The next useful experiment is to inspect the failing stop-sign trajectory, then adjust the collision guidance weight or trigger timing and rerun the same scale sweep.
+The next useful experiment is to adjust the collision guidance weight or trigger timing and rerun the same scale sweep on the stop-sign scenario.

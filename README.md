@@ -17,7 +17,7 @@
 | nuPlan mini 数据 | 64 个 `.db`、4 个城市地图已接入，数据放在 D 盘 |
 | closed-loop smoke test | 1 场景成功，失败 0 |
 | mini closed-loop evaluation | 10 场景成功，失败 0，final weighted score 0.9287 |
-| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照和 guidance scale sweep |
+| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照、scale sweep 和失败轨迹复盘 |
 
 官方来源:
 
@@ -46,6 +46,7 @@
 - 从真实 nuPlan simulation log 导出执行轨迹、expert 轨迹和 planner future 对比图。
 - 完成 guidance mini5 对照实验，记录 baseline 与 guidance 的场景级差异。
 - 完成 `guidance_scale=0.1/0.3/0.5/1.0` 小规模扫描，观察 scale 对安全指标和 runtime 的影响。
+- 导出 stop-sign guidance 失败场景的跨 scale 轨迹对比图和诊断表。
 
 尚未完成:
 
@@ -102,6 +103,8 @@ Diffusion-Planner 的核心思想:
 │   ├── guidance_mini5_eval_summary.md
 │   ├── guidance_scale_sweep.md
 │   ├── guidance_scale_sweep.png
+│   ├── guidance_stop_sign_trajectory_comparison.md
+│   ├── guidance_stop_sign_trajectory_comparison.png
 │   ├── guidance_vs_baseline_mini5.md
 │   ├── nuplan_low_score_trajectory.png
 │   ├── sampling_steps_ablation.csv
@@ -114,6 +117,7 @@ Diffusion-Planner 的核心思想:
     ├── benchmark_sampling_steps.py
     ├── bootstrap_repos.ps1
     ├── check_nuplan_data.ps1
+    ├── compare_guidance_trajectories.py
     ├── compare_eval_runs.py
     ├── download_checkpoint.ps1
     ├── download_nuplan_mini.ps1
@@ -589,12 +593,25 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 
 ![guidance scale sweep](results/guidance_scale_sweep.png)
 
+针对失败的 `stopping_at_stop_sign_with_lead` 场景，又导出了 baseline 与不同 guidance scale 的真实 closed-loop 执行轨迹对比:
+
+| Run | Score | Executed path length | Avg error to expert | Endpoint error |
+| --- | ---: | ---: | ---: | ---: |
+| baseline | 1.0000 | 7.162 m | 1.388 m | 1.965 m |
+| scale 0.1 | 1.0000 | 7.382 m | 1.560 m | 2.182 m |
+| scale 0.3 | 0.0000 | 8.699 m | 2.740 m | 3.489 m |
+| scale 0.5 | 0.0000 | 17.105 m | 7.971 m | 11.879 m |
+| scale 1.0 | 0.0000 | 20.768 m | 9.752 m | 15.423 m |
+
+![guidance stop-sign trajectory comparison](results/guidance_stop_sign_trajectory_comparison.png)
+
 结论:
 
 - guidance run 能完整跑通，但在 mini5 上没有提升 final score。
 - final score 从 `0.9254` 降到 `0.7264`，主要因为 `stopping_at_stop_sign_with_lead` 场景从 `1.0000` 掉到 `0.0000`。
 - 该场景的 candidate limiting metrics 为 `ego_is_comfortable=0`、`no_ego_at_fault_collisions=0`、`time_to_collision_within_bound=0`，说明 guidance 配置在这个小样本场景中引入了硬安全指标问题。
 - `guidance_scale=0.1` 保持了 baseline 级别的 final score 和 stop-sign score；`0.3/0.5/1.0` 都触发 stop-sign hard failure。
+- 轨迹复盘显示，较强 guidance 会让该 stop-sign 场景的执行路径明显变长，scale `0.5/1.0` 的 endpoint error 分别扩大到 `11.879 m` 和 `15.423 m`。
 - guidance 不是“开了就更好”，需要继续调约束函数、触发时机和场景选择。
 
 结果文件:
@@ -607,6 +624,9 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - [results/guidance_scale_sweep.md](results/guidance_scale_sweep.md)
 - [results/guidance_scale_sweep.csv](results/guidance_scale_sweep.csv)
 - [results/guidance_scale_sweep.png](results/guidance_scale_sweep.png)
+- [results/guidance_stop_sign_trajectory_comparison.md](results/guidance_stop_sign_trajectory_comparison.md)
+- [results/guidance_stop_sign_trajectory_comparison.csv](results/guidance_stop_sign_trajectory_comparison.csv)
+- [results/guidance_stop_sign_trajectory_comparison.png](results/guidance_stop_sign_trajectory_comparison.png)
 
 更多说明见:
 
@@ -624,6 +644,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - 编写 `run_mini_eval.ps1`、`summarize_nuplan_results.py`、`plot_mini_eval.py`，将 nuPlan mini closed-loop 输出自动整理成 CSV、Markdown 和图表。
 - 编写 `analyze_mini_eval_low_scores.py`、`analyze_planner_latency.py` 和 `visualize_nuplan_trajectory.py`，把评估结果进一步转成诊断报告和真实场景轨迹图。
 - 编写 `compare_eval_runs.py`，对 baseline 和 guidance 的同一批 scenario token 做场景级对比。
+- 编写 `compare_guidance_trajectories.py`，对同一失败场景下不同 guidance scale 的真实执行轨迹做叠加对比。
 - 编写 `enable_guidance_scale_override.py` 和 `summarize_guidance_sweep.py`，把 guidance scale 从源码常量变成可扫描参数，并自动汇总表格和图。
 - 解决 Windows 下 nuPlan 数据结构、路径长度、GIS/PyTorch/NumPy/protobuf 等依赖兼容问题。
 
@@ -667,7 +688,7 @@ Diffusion-Planner 的核心流程:
 - planner 入口可以导入并在 nuPlan mini simulator 中运行。
 - 可以完成 synthetic benchmark、sampling ablation 和 CPU smoke benchmark。
 - 可以在 nuPlan mini 上完成 10 场景 closed-loop nonreactive evaluation。
-- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告和 guidance scale sweep。
+- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告、guidance scale sweep 和失败轨迹复盘。
 
 本项目还不能说明:
 
@@ -687,7 +708,7 @@ Diffusion-Planner 的核心流程:
 
 1. 将 mini evaluation 扩展到 15 个以上场景，并固定随机种子和 scenario list。
 2. 对 `diffusion_steps=5/10/20/50` 分别跑 closed-loop mini metrics，补质量-速度曲线。
-3. 复盘 guidance 失败场景，导出 stop-sign 场景轨迹图，并检查 collision guidance 的权重和触发时机。
+3. 检查 collision guidance 的权重和触发时机，针对 stop-sign 失败场景做约束函数调整。
 4. 把真实轨迹可视化扩展到多场景批量导出，并加入地图 lane layer。
 5. 如果硬件和时间允许，再尝试 Val14 子集或更大规模 benchmark。
 

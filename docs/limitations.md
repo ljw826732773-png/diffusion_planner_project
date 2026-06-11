@@ -38,12 +38,14 @@
 
 - `visualize_synthetic_trajectory.py`: synthetic scene 轨迹图，只用于模型输出链路验证。
 - `visualize_nuplan_trajectory.py`: 从真实 nuPlan simulation log 导出 executed ego、expert ego 和 planner future 对比图。
+- `compare_guidance_trajectories.py`: 对同一 scenario 下不同 guidance scale 的 closed-loop executed trajectory 做静态叠加对比。
 - `mini10_eval_score_runtime.png`: 评估指标图，不是地图轨迹图。
 
 仍待完善:
 
 - 当前真实轨迹图还没有叠加 lane / route / traffic light 等地图层。
 - 多场景批量导出和 NuBoard 截图还没有整理成静态 artifact。
+- 静态轨迹图不能直接显示碰撞对象和逐帧交互细节，仍需要 NuBoard 做 frame-level 检查。
 
 ## Guidance 结果边界
 
@@ -59,11 +61,14 @@ scale sweep 的 mini5 结果进一步显示:
 | 0.5 | 0.7264 | 0.0000 | 0.8000 | 0.8000 |
 | 1.0 | 0.5264 | 0.0000 | 0.6000 | 0.6000 |
 
+stop-sign 失败场景的轨迹复盘显示，baseline executed path length 为 `7.162 m`，scale `0.5` 和 `1.0` 分别增长到 `17.105 m` 和 `20.768 m`，endpoint error 分别为 `11.879 m` 和 `15.423 m`。这说明较强 guidance 在该场景中不仅影响指标，也明显改变了 closed-loop 执行轨迹。
+
 因此只能说:
 
 - guidance 配置路径已打通。
 - guidance closed-loop 对照实验已完成。
 - guidance scale sweep 已完成。
+- guidance 失败场景的静态轨迹复盘已完成。
 - 当前 mini5 结果显示 guidance 需要继续调约束权重、触发时机和失败场景处理。
 
 不能说:
