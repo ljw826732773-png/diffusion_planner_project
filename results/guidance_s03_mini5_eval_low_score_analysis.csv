@@ -1,0 +1,6 @@
+rank,scenario,scenario_type,log_name,score,limiting_metrics
+1,6bd0988fce0f548b,stopping_at_stop_sign_with_lead,2021.07.16.18.06.21_veh-38_04933_05307,0.0,no_ego_at_fault_collisions=0.0000; time_to_collision_within_bound=0.0000
+2,99ca544752f255ad,accelerating_at_traffic_light_without_lead,2021.05.12.23.36.44_veh-35_01133_01535,0.8676292174478799,ego_is_comfortable=0.0000; ego_progress_along_expert_route=0.9764
+3,1f151e15c9cf5c81,near_multiple_vehicles,2021.06.08.14.35.24_veh-26_02555_03004,0.875,ego_is_comfortable=0.0000
+4,d0b68e15688c58ad,on_pickup_dropoff,2021.05.12.23.36.44_veh-35_01133_01535,0.8849421523043851,ego_progress_along_expert_route=0.9741; speed_limit_compliance=0.5721
+5,aa8237ebd54f5a0b,starting_protected_noncross_turn,2021.05.12.23.36.44_veh-35_01133_01535,1.0,

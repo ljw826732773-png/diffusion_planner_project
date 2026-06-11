@@ -9,7 +9,8 @@ param(
     [string]$Worker = "sequential",
     [int]$LimitTotalScenarios = 1,
     [string]$ExperimentUid = "dp/mini/model",
-    [string]$Planner = "diffusion_planner"
+    [string]$Planner = "diffusion_planner",
+    [double]$GuidanceScale = -1
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,6 +52,12 @@ $env:HYDRA_FULL_ERROR = "1"
 
 $ArgsFile = Join-Path $DiffusionPlannerRoot "checkpoints\args.json"
 $CkptFile = Join-Path $DiffusionPlannerRoot "checkpoints\model.pth"
+
+if ($GuidanceScale -ge 0) {
+    python "$PSScriptRoot\enable_guidance_scale_override.py" --repo-root "$DiffusionPlannerRoot"
+    $env:DP_GUIDANCE_SCALE = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0}", $GuidanceScale)
+    Write-Output "DP_GUIDANCE_SCALE=$env:DP_GUIDANCE_SCALE"
+}
 
 $SimulationArgs = @(
     "+simulation=$Challenge",

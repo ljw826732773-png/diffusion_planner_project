@@ -2,7 +2,7 @@
 
 ## 没有完整官方 benchmark 指标
 
-当前已完成 nuPlan mini 上的 1 场景 smoke test、5 场景 baseline evaluation、10 场景 baseline evaluation，以及 5 场景 guidance 对照实验。但还没有跑完整官方 challenge split，因此不能声称复现了论文表格中的 Val14/Test14 分数。
+当前已完成 nuPlan mini 上的 1 场景 smoke test、5 场景 baseline evaluation、10 场景 baseline evaluation、5 场景 guidance 对照实验，以及 `guidance_scale=0.1/0.3/0.5/1.0` 小规模扫描。但还没有跑完整官方 challenge split，因此不能声称复现了论文表格中的 Val14/Test14 分数。
 
 当前已配置 mini 数据和地图:
 
@@ -47,13 +47,24 @@
 
 ## Guidance 结果边界
 
-当前 guidance mini5 已跑通，成功 / 失败为 5 / 0，但 final score 从 baseline mini5 的 `0.9254` 降到 `0.7264`。主要退化来自 `stopping_at_stop_sign_with_lead` 场景，该场景 guidance score 为 `0.0000`，并触发 `no_ego_at_fault_collisions=0` 和 `time_to_collision_within_bound=0`。
+当前 guidance mini5 已跑通，成功 / 失败为 5 / 0，但默认 `guidance_scale=0.5` 的 final score 从 baseline mini5 的 `0.9254` 降到 `0.7264`。主要退化来自 `stopping_at_stop_sign_with_lead` 场景，该场景 guidance score 为 `0.0000`，并触发 `no_ego_at_fault_collisions=0` 和 `time_to_collision_within_bound=0`。
+
+scale sweep 的 mini5 结果进一步显示:
+
+| Guidance scale | Final score | Stop-sign score | Collision | TTC |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 baseline | 0.9254 | 1.0000 | 1.0000 | 1.0000 |
+| 0.1 | 0.9254 | 1.0000 | 1.0000 | 1.0000 |
+| 0.3 | 0.7255 | 0.0000 | 0.8000 | 0.8000 |
+| 0.5 | 0.7264 | 0.0000 | 0.8000 | 0.8000 |
+| 1.0 | 0.5264 | 0.0000 | 0.6000 | 0.6000 |
 
 因此只能说:
 
 - guidance 配置路径已打通。
 - guidance closed-loop 对照实验已完成。
-- 当前 mini5 结果显示 guidance 需要继续调参。
+- guidance scale sweep 已完成。
+- 当前 mini5 结果显示 guidance 需要继续调约束权重、触发时机和失败场景处理。
 
 不能说:
 

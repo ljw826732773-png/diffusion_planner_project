@@ -7,7 +7,7 @@ guidance_fn:
   _target_: diffusion_planner.model.guidance.guidance_wrapper.GuidanceWrapper
 ```
 
-At inference time the decoder passes the guidance function to DPM-Solver as classifier guidance with `guidance_scale=0.5`.
+At inference time the decoder passes the guidance function to DPM-Solver as classifier guidance. The upstream code uses `guidance_scale=0.5`; this project adds a small patch helper so the scale can be controlled through `DP_GUIDANCE_SCALE` for diagnostic sweeps.
 
 ## Official entry points
 
@@ -33,7 +33,8 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
   -LimitTotalScenarios 5 `
   -ExperimentUid "dp/guidance_mini5/model" `
   -SummaryPrefix "guidance_mini5_eval" `
-  -Planner "diffusion_planner_guidance"
+  -Planner "diffusion_planner_guidance" `
+  -GuidanceScale 0.5
 ```
 
 ## Local result
@@ -53,6 +54,25 @@ The guidance run completed successfully, but it reduced the mini5 final score. T
 
 This means guidance is not automatically better. On this mini split, the collision/TTC-related hard failure outweighed the small progress improvement in another scenario.
 
+## Guidance scale sweep
+
+The same five mini scenario tokens were also evaluated with `guidance_scale=0.1/0.3/0.5/1.0`, using the baseline run as scale `0`.
+
+| Guidance scale | Final score | Collision | TTC | Comfort | Stop-sign score | Mean runtime |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 baseline | 0.9254 | 1.0000 | 1.0000 | 0.6000 | 1.0000 | 0.8146 s |
+| 0.1 | 0.9254 | 1.0000 | 1.0000 | 0.6000 | 1.0000 | 0.7147 s |
+| 0.3 | 0.7255 | 0.8000 | 0.8000 | 0.6000 | 0.0000 | 0.5042 s |
+| 0.5 | 0.7264 | 0.8000 | 0.8000 | 0.4000 | 0.0000 | 0.4459 s |
+| 1.0 | 0.5264 | 0.6000 | 0.6000 | 0.4000 | 0.0000 | 0.4571 s |
+
+Interpretation:
+
+- Scale `0.1` keeps the baseline-level score on this mini subset.
+- Scales `0.3`, `0.5`, and `1.0` all turn the stop-sign scenario into a hard failure.
+- Scale `1.0` further degrades aggregate collision and TTC scores, so stronger guidance is not safer under this setup.
+- These results are diagnostics for the mini subset, not full benchmark conclusions.
+
 Outputs:
 
 - `results/guidance_mini5_eval_summary.md`
@@ -60,7 +80,10 @@ Outputs:
 - `results/guidance_mini5_eval_latency_summary.md`
 - `results/guidance_vs_baseline_mini5.md`
 - `results/guidance_vs_baseline_mini5.png`
+- `results/guidance_scale_sweep.md`
+- `results/guidance_scale_sweep.csv`
+- `results/guidance_scale_sweep.png`
 
 ## Next boundary
 
-The next useful experiment is not simply increasing the number of guidance scenarios. It is to sweep guidance strength, for example `guidance_scale=0.1/0.3/0.5/1.0`, and compare final score, collision, TTC, comfort, and runtime.
+The next useful experiment is to inspect the failing stop-sign trajectory, then adjust the collision guidance weight or trigger timing and rerun the same scale sweep.

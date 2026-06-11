@@ -88,12 +88,14 @@
 - guidance mini5 final weighted score: 0.7264。
 - baseline mini5 final weighted score: 0.9254。
 - 主要退化来自 `stopping_at_stop_sign_with_lead` 场景，guidance score 为 0，触发 collision/TTC/comfort 相关扣分。
+- 已完成 `guidance_scale=0.1/0.3/0.5/1.0` 扫描。
+- scale `0.1` 保持 baseline 级别 final score；scale `0.3/0.5/1.0` 都让 stop-sign 场景 score 掉到 0。
 
 后续方向:
 
-- 扫描 `guidance_scale=0.1/0.3/0.5/1.0`。
 - 对 guidance 失败场景导出真实轨迹图。
 - 检查 collision guidance 是否需要针对 stop-sign 场景做约束权重或触发时机调整。
+- 在调整 guidance 函数后复跑同一组 scale sweep，避免只看单点结果。
 
 ## 5. 项目发布整理
 

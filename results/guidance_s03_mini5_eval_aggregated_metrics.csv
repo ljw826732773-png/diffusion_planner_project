@@ -1,0 +1,12 @@
+scenario,log_name,scenario_type,num_scenarios,planner_name,aggregator_type,corners_in_drivable_area,drivable_area_compliance,driving_direction_compliance,ego_is_comfortable,ego_is_making_progress,ego_jerk,ego_lane_change,ego_lat_acceleration,ego_lon_acceleration,ego_lon_jerk,ego_progress_along_expert_route,ego_yaw_acceleration,ego_yaw_rate,no_ego_at_fault_collisions,speed_limit_compliance,time_to_collision_within_bound,score
+99ca544752f255ad,2021.05.12.23.36.44_veh-35_01133_01535,accelerating_at_traffic_light_without_lead,,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,0.9764134958332156,,,1.0,1.0,1.0,0.8676292174478799
+1f151e15c9cf5c81,2021.06.08.14.35.24_veh-26_02555_03004,near_multiple_vehicles,,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,0.875
+d0b68e15688c58ad,2021.05.12.23.36.44_veh-35_01133_01535,on_pickup_dropoff,,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,0.9741013720659811,,,1.0,0.572141894135064,1.0,0.8849421523043851
+aa8237ebd54f5a0b,2021.05.12.23.36.44_veh-35_01133_01535,starting_protected_noncross_turn,,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,1.0
+6bd0988fce0f548b,2021.07.16.18.06.21_veh-38_04933_05307,stopping_at_stop_sign_with_lead,,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,0.0,1.0,0.0,0.0
+accelerating_at_traffic_light_without_lead,,accelerating_at_traffic_light_without_lead,1.0,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,0.9764134958332156,,,1.0,1.0,1.0,0.8676292174478799
+near_multiple_vehicles,,near_multiple_vehicles,1.0,diffusion_planner,weighted_average,,1.0,1.0,0.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,0.875
+on_pickup_dropoff,,on_pickup_dropoff,1.0,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,0.9741013720659811,,,1.0,0.572141894135064,1.0,0.8849421523043851
+starting_protected_noncross_turn,,starting_protected_noncross_turn,1.0,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,1.0,1.0,1.0,1.0
+stopping_at_stop_sign_with_lead,,stopping_at_stop_sign_with_lead,1.0,diffusion_planner,weighted_average,,1.0,1.0,1.0,1.0,,,,,,1.0,,,0.0,1.0,0.0,0.0
+final_score,,final_score,5.0,diffusion_planner,weighted_average,,1.0,1.0,0.6,1.0,,,,,,0.9901029735798392,,,0.8,0.9144283788270128,0.8,0.725514273950453
