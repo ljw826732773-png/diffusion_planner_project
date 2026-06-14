@@ -111,6 +111,11 @@ The tuned guidance setting was then validated on the existing 10-scenario mini s
 
 The tuned guidance score is essentially tied with the baseline on this subset. It preserves collision and TTC metrics, but it introduces a runtime outlier: `waiting_for_pedestrian_to_cross` has mean compute runtime `33.7791 s` and simulation duration `5041.2444 s`.
 
+The outlier report adds two important details:
+
+- The same scenario has baseline mean runtime `0.4761 s`.
+- The tuned guidance median runtime is only `0.7389 s`, so the high mean is likely caused by one or a few very slow planner calls rather than every frame being slow.
+
 Outputs:
 
 - `results/guidance_mini5_eval_summary.md`
@@ -132,9 +137,10 @@ Outputs:
 - `results/guidance_weight_stop_sign_trajectory_comparison.png`
 - `results/guidance_w10_mini10_eval_summary.md`
 - `results/guidance_w10_mini10_eval_latency_summary.md`
+- `results/guidance_w10_mini10_runtime_outliers.md`
 - `results/guidance_w10_vs_baseline_mini10.md`
 - `results/guidance_w10_vs_baseline_mini10.png`
 
 ## Next boundary
 
-The next useful experiment is to diagnose the `waiting_for_pedestrian_to_cross` runtime outlier, then decide whether guidance should be disabled or weakened under that interaction pattern.
+The next useful experiment is frame-level profiling for `waiting_for_pedestrian_to_cross`, then deciding whether guidance should be disabled, clipped, or weakened under that interaction pattern.

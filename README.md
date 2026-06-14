@@ -643,6 +643,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - 调低 collision guidance 内部 weight 后，`scale=0.5` 的 stop-sign 场景从 `0.0000` 恢复到 `1.0000`，mini5 final score 也恢复到 baseline 水平。
 - tuned guidance 在 mini10 上 final score 为 `0.9293`，与 baseline mini10 的 `0.9287` 基本持平，collision/TTC 均保持 `1.0000`。
 - tuned guidance mini10 存在明显 runtime outlier：`waiting_for_pedestrian_to_cross` 场景 mean compute runtime 为 `33.7791 s`，导致整体 mean runtime 被拉高到 `4.0871 s`；median runtime `0.7581 s` 更接近多数场景表现。
+- outlier 诊断显示该场景 median runtime 为 `0.7389 s`，baseline mean runtime 为 `0.4761 s`，但 candidate mean runtime 达到 `33.7791 s`，说明问题更像少数 planner call 卡住，而不是整段场景持续变慢。
 - guidance 不是“开了就更好”，需要继续调约束函数、内部权重、触发时机和场景选择。
 
 结果文件:
@@ -664,6 +665,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - [results/guidance_weight_vs_baseline_mini5.md](results/guidance_weight_vs_baseline_mini5.md)
 - [results/guidance_w10_mini10_eval_summary.md](results/guidance_w10_mini10_eval_summary.md)
 - [results/guidance_w10_mini10_eval_latency_summary.md](results/guidance_w10_mini10_eval_latency_summary.md)
+- [results/guidance_w10_mini10_runtime_outliers.md](results/guidance_w10_mini10_runtime_outliers.md)
 - [results/guidance_w10_vs_baseline_mini10.md](results/guidance_w10_vs_baseline_mini10.md)
 - [results/guidance_w10_vs_baseline_mini10.png](results/guidance_w10_vs_baseline_mini10.png)
 
@@ -684,6 +686,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - 编写 `analyze_mini_eval_low_scores.py`、`analyze_planner_latency.py` 和 `visualize_nuplan_trajectory.py`，把评估结果进一步转成诊断报告和真实场景轨迹图。
 - 编写 `compare_eval_runs.py`，对 baseline 和 guidance 的同一批 scenario token 做场景级对比。
 - 编写 `compare_guidance_trajectories.py`，对同一失败场景下不同 guidance scale 的真实执行轨迹做叠加对比。
+- 编写 `analyze_runtime_outliers.py`，把 runner runtime、baseline runtime 和 simulation log 对象数量合并成 outlier 诊断表。
 - 编写 `enable_guidance_scale_override.py` 和 `summarize_guidance_sweep.py`，把 guidance scale 与 collision guidance weight 从源码常量变成可扫描参数，并自动汇总表格和图。
 - 解决 Windows 下 nuPlan 数据结构、路径长度、GIS/PyTorch/NumPy/protobuf 等依赖兼容问题。
 
@@ -748,7 +751,7 @@ Diffusion-Planner 的核心流程:
 
 1. 将 mini evaluation 扩展到 15 个以上场景，并固定随机种子和 scenario list。
 2. 对 `diffusion_steps=5/10/20/50` 分别跑 closed-loop mini metrics，补质量-速度曲线。
-3. 定位 tuned guidance mini10 中 `waiting_for_pedestrian_to_cross` 的 runtime outlier，检查是否与 guidance 梯度、actor 数量或场景长度相关。
+3. 对 `waiting_for_pedestrian_to_cross` 做 frame-level profiling，定位具体是哪一次 planner call 导致 tuned guidance runtime outlier。
 4. 把真实轨迹可视化扩展到多场景批量导出，并加入地图 lane layer。
 5. 如果硬件和时间允许，再尝试 Val14 子集或更大规模 benchmark。
 

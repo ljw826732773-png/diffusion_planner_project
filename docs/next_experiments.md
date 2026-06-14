@@ -94,10 +94,12 @@
 - 已完成 collision guidance weight tuning：`guidance_scale=0.5, collision_weight=1.0` 在 mini5 上将 final score 从默认 guidance 的 `0.7264` 恢复到 `0.9254`。
 - 已完成 tuned guidance mini10 验证：10 / 0 成功，final score `0.9293`，baseline mini10 为 `0.9287`。
 - 当前主要问题从 score 退化转为 runtime outlier：`waiting_for_pedestrian_to_cross` mean compute runtime `33.7791 s`。
+- 已完成 runtime outlier 初步诊断：该场景 median runtime `0.7389 s`，baseline mean runtime `0.4761 s`，说明需要定位少数极慢 planner call。
 
 后续方向:
 
-- 定位 `waiting_for_pedestrian_to_cross` 的 runtime outlier，检查 guidance 梯度计算、agent 数量和场景长度。
+- 对 `waiting_for_pedestrian_to_cross` 做 frame-level profiling，记录每次 `compute_trajectory` 的耗时。
+- 检查该场景的 guidance 梯度计算是否在某一帧遇到异常距离、异常 actor 组合或数值不稳定。
 - 如果新的失败集中在特定类型，继续调 collision guidance 的触发时间窗或场景条件。
 - 在调整 guidance 函数后复跑同一组 scale/weight sweep，避免只看单点结果。
 
