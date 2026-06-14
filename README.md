@@ -16,8 +16,9 @@
 | synthetic benchmark | 已生成 latency / throughput / CUDA memory 结果 |
 | nuPlan mini 数据 | 64 个 `.db`、4 个城市地图已接入，数据放在 D 盘 |
 | closed-loop smoke test | 1 场景成功，失败 0 |
-| mini closed-loop evaluation | 10 场景成功，失败 0，final weighted score 0.9287 |
-| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照、scale/weight tuning 和失败轨迹复盘 |
+| mini closed-loop evaluation | baseline 10 场景成功，失败 0，final weighted score 0.9287 |
+| tuned guidance evaluation | `guidance_scale=0.5, collision_weight=1.0` 已跑 10 场景，final weighted score 0.9293 |
+| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照、scale/weight tuning、失败轨迹复盘和 mini10 tuned guidance 验证 |
 
 官方来源:
 
@@ -48,6 +49,7 @@
 - 完成 `guidance_scale=0.1/0.3/0.5/1.0` 小规模扫描，观察 scale 对安全指标和 runtime 的影响。
 - 导出 stop-sign guidance 失败场景的跨 scale 轨迹对比图和诊断表。
 - 将 collision guidance 内部 weight 参数化，并验证 `guidance_scale=0.5, collision_weight=1.0` 可以在 mini5 上恢复 stop-sign 场景。
+- 将 tuned guidance 扩展到 10 场景 mini evaluation，验证 final score 与 baseline 基本持平，并记录 runtime outlier。
 
 尚未完成:
 
@@ -108,6 +110,9 @@ Diffusion-Planner 的核心思想:
 │   ├── guidance_stop_sign_trajectory_comparison.png
 │   ├── guidance_weight_vs_default_mini5.md
 │   ├── guidance_weight_vs_default_mini5.png
+│   ├── guidance_w10_mini10_eval_summary.md
+│   ├── guidance_w10_vs_baseline_mini10.md
+│   ├── guidance_w10_vs_baseline_mini10.png
 │   ├── guidance_vs_baseline_mini5.md
 │   ├── nuplan_low_score_trajectory.png
 │   ├── sampling_steps_ablation.csv
@@ -619,6 +624,15 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 
 ![guidance weight vs default](results/guidance_weight_vs_default_mini5.png)
 
+随后将 tuned guidance 扩展到 10 场景 mini evaluation:
+
+| Run | 场景数 | 成功 / 失败 | Final score | Collision | TTC | Mean runtime | Median runtime |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| baseline mini10 | 10 | 10 / 0 | 0.9287 | 1.0000 | 1.0000 | 0.4673 s | 0.4327 s |
+| guidance scale 0.5, weight 1.0 mini10 | 10 | 10 / 0 | 0.9293 | 1.0000 | 1.0000 | 4.0871 s | 0.7581 s |
+
+![guidance tuned mini10 comparison](results/guidance_w10_vs_baseline_mini10.png)
+
 结论:
 
 - guidance run 能完整跑通，但在 mini5 上没有提升 final score。
@@ -627,6 +641,8 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - `guidance_scale=0.1` 保持了 baseline 级别的 final score 和 stop-sign score；`0.3/0.5/1.0` 都触发 stop-sign hard failure。
 - 轨迹复盘显示，较强 guidance 会让该 stop-sign 场景的执行路径明显变长，scale `0.5/1.0` 的 endpoint error 分别扩大到 `11.879 m` 和 `15.423 m`。
 - 调低 collision guidance 内部 weight 后，`scale=0.5` 的 stop-sign 场景从 `0.0000` 恢复到 `1.0000`，mini5 final score 也恢复到 baseline 水平。
+- tuned guidance 在 mini10 上 final score 为 `0.9293`，与 baseline mini10 的 `0.9287` 基本持平，collision/TTC 均保持 `1.0000`。
+- tuned guidance mini10 存在明显 runtime outlier：`waiting_for_pedestrian_to_cross` 场景 mean compute runtime 为 `33.7791 s`，导致整体 mean runtime 被拉高到 `4.0871 s`；median runtime `0.7581 s` 更接近多数场景表现。
 - guidance 不是“开了就更好”，需要继续调约束函数、内部权重、触发时机和场景选择。
 
 结果文件:
@@ -646,6 +662,10 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - [results/guidance_weight_vs_default_mini5.md](results/guidance_weight_vs_default_mini5.md)
 - [results/guidance_weight_vs_default_mini5.png](results/guidance_weight_vs_default_mini5.png)
 - [results/guidance_weight_vs_baseline_mini5.md](results/guidance_weight_vs_baseline_mini5.md)
+- [results/guidance_w10_mini10_eval_summary.md](results/guidance_w10_mini10_eval_summary.md)
+- [results/guidance_w10_mini10_eval_latency_summary.md](results/guidance_w10_mini10_eval_latency_summary.md)
+- [results/guidance_w10_vs_baseline_mini10.md](results/guidance_w10_vs_baseline_mini10.md)
+- [results/guidance_w10_vs_baseline_mini10.png](results/guidance_w10_vs_baseline_mini10.png)
 
 更多说明见:
 
@@ -707,7 +727,7 @@ Diffusion-Planner 的核心流程:
 - planner 入口可以导入并在 nuPlan mini simulator 中运行。
 - 可以完成 synthetic benchmark、sampling ablation 和 CPU smoke benchmark。
 - 可以在 nuPlan mini 上完成 10 场景 closed-loop nonreactive evaluation。
-- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告、guidance scale/weight tuning 和失败轨迹复盘。
+- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告、guidance scale/weight tuning、mini10 tuned guidance 验证和失败轨迹复盘。
 
 本项目还不能说明:
 
@@ -715,7 +735,8 @@ Diffusion-Planner 的核心流程:
 - 在 nuPlan Val14/Test14 上达到论文性能。
 - 完成官方 full split 大规模评测。
 - 完成模型训练。
-- guidance 一定优于 baseline；当前 mini5 对照和 scale sweep 显示，较强 guidance 会在 stop-sign 场景中触发 collision/TTC 硬扣分，调低内部 weight 后只是恢复到 baseline 水平。
+- guidance 一定优于 baseline；当前 mini5 对照和 scale sweep 显示，较强 guidance 会在 stop-sign 场景中触发 collision/TTC 硬扣分，调低内部 weight 后在 mini10 上也只是与 baseline 基本持平。
+- tuned guidance 已满足实时性；当前 mini10 存在一个 pedestrian 场景 runtime outlier，需要进一步定位。
 
 更详细说明见:
 
@@ -727,7 +748,7 @@ Diffusion-Planner 的核心流程:
 
 1. 将 mini evaluation 扩展到 15 个以上场景，并固定随机种子和 scenario list。
 2. 对 `diffusion_steps=5/10/20/50` 分别跑 closed-loop mini metrics，补质量-速度曲线。
-3. 在更大场景子集上验证 `guidance_scale=0.5, collision_weight=1.0` 是否稳定，再继续调触发时机。
+3. 定位 tuned guidance mini10 中 `waiting_for_pedestrian_to_cross` 的 runtime outlier，检查是否与 guidance 梯度、actor 数量或场景长度相关。
 4. 把真实轨迹可视化扩展到多场景批量导出，并加入地图 lane layer。
 5. 如果硬件和时间允许，再尝试 Val14 子集或更大规模 benchmark。
 

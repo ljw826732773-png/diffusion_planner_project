@@ -65,6 +65,8 @@ stop-sign 失败场景的轨迹复盘显示，baseline executed path length 为 
 
 进一步将 collision guidance 内部 multiplier 从 `3.0` 降到 `1.0`，保持外层 `guidance_scale=0.5` 后，mini5 final score 从 `0.7264` 恢复到 `0.9254`，stop-sign 场景从 `0.0000` 恢复到 `1.0000`。这个结果说明 failure 对 guidance 权重敏感，但仍只是 mini5 小样本诊断。
 
+在 10 场景 mini subset 上，`guidance_scale=0.5, collision_weight=1.0` 的 final score 为 `0.9293`，baseline mini10 为 `0.9287`，collision/TTC 都保持 `1.0000`。但该 run 出现明显 runtime outlier：`waiting_for_pedestrian_to_cross` 的 mean compute runtime 为 `33.7791 s`，simulation duration 为 `5041.2444 s`。因此 tuned guidance 仍不能被称为满足实时部署要求。
+
 因此只能说:
 
 - guidance 配置路径已打通。
@@ -72,7 +74,8 @@ stop-sign 失败场景的轨迹复盘显示，baseline executed path length 为 
 - guidance scale sweep 已完成。
 - guidance 失败场景的静态轨迹复盘已完成。
 - collision guidance weight tuning 已完成一个 mini5 诊断版本。
-- 当前 mini5 结果显示 guidance 需要继续在更大场景子集上验证约束权重、触发时机和失败场景处理。
+- tuned guidance 已扩展到 mini10 进行小规模验证。
+- 当前结果显示 guidance 需要继续定位 runtime outlier，并在更大场景子集上验证约束权重、触发时机和失败场景处理。
 
 不能说:
 

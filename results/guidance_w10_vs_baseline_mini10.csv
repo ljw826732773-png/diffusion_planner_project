@@ -1,0 +1,11 @@
+scenario,scenario_type,baseline_score,candidate_score,score_delta,limits
+d0b68e15688c58ad,on_pickup_dropoff,0.8892463099333667,0.8866867687355847,-0.0025595411977820115,ego_progress_along_expert_route=0.9725; speed_limit_compliance=0.5811
+6e256d585b245983,starting_unprotected_cross_turn,0.838567833808717,0.8379232211359159,-0.000644612672801137,speed_limit_compliance=0.3517
+1f151e15c9cf5c81,near_multiple_vehicles,0.875,0.875,0.0,ego_is_comfortable=0.0000
+aa8237ebd54f5a0b,starting_protected_noncross_turn,1.0,1.0,0.0,none below 0.999
+6bd0988fce0f548b,stopping_at_stop_sign_with_lead,1.0,1.0,0.0,none below 0.999
+e4eb6ff392715216,waiting_for_pedestrian_to_cross,1.0,1.0,0.0,none below 0.999
+a3a4c3242d345082,starting_left_turn,0.9236830165303654,0.9237577326954654,7.471616509990842e-05,ego_progress_along_expert_route=0.7932; speed_limit_compliance=0.9535
+99ca544752f255ad,accelerating_at_traffic_light_without_lead,0.8643356645848171,0.8651942915025417,0.0008586269177245365,ego_is_comfortable=0.0000; ego_progress_along_expert_route=0.9686
+b2a5c363d1dd5abe,changing_lane_to_left,0.9345846056099312,0.9364011602293062,0.0018165546193750215,speed_limit_compliance=0.7456
+485e78d3d4035b52,following_lane_with_lead,0.9618654411475116,0.9684303153094224,0.006564874161910761,ego_progress_along_expert_route=0.8990

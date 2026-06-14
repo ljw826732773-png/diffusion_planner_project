@@ -65,6 +65,7 @@ def write_markdown(
     baseline_label: str,
     candidate_label: str,
 ) -> None:
+    scenario_count = len(rows)
     lines = [
         "# Evaluation Run Comparison",
         "",
@@ -106,7 +107,7 @@ def write_markdown(
             "",
             "- A positive delta means the candidate run scored higher than the baseline on the same scenario token.",
             "- A zero candidate score usually indicates a hard metric failure such as at-fault collision or time-to-collision violation.",
-            "- This comparison uses the same five mini scenario tokens, so it is useful for debugging guidance behavior, but it is still not a paper-level benchmark.",
+            f"- This comparison uses the same {scenario_count} mini scenario tokens, so it is useful for debugging guidance behavior, but it is still not a paper-level benchmark.",
         ]
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,7 +127,7 @@ def plot(rows: list[dict], output_path: Path, baseline_label: str, candidate_lab
     ax.set_xlim(0, 1.05)
     ax.set_yticks(y, labels)
     ax.set_xlabel("weighted scenario score")
-    ax.set_title("Baseline vs Guidance mini5 scenario scores")
+    ax.set_title(f"Baseline vs Guidance mini evaluation ({len(rows)} scenarios)")
     ax.grid(axis="x", linewidth=0.4, alpha=0.35)
     ax.legend(loc="lower right")
     plt.tight_layout()

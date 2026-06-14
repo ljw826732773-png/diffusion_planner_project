@@ -34,13 +34,34 @@ def main() -> None:
         type=Path,
         default=Path("results/mini_eval_runner_report.csv"),
     )
+    parser.add_argument(
+        "--aggregated",
+        type=Path,
+        default=None,
+        help="Optional aggregated metrics CSV used to map scenario tokens to scenario types.",
+    )
     parser.add_argument("--output-csv", type=Path, default=Path("results/mini_eval_latency_summary.csv"))
     parser.add_argument("--output-md", type=Path, default=Path("results/mini_eval_latency_summary.md"))
     args = parser.parse_args()
 
     runner = pd.read_csv(project_path(args.runner_report))
+    scenario_types = {}
+    if args.aggregated is not None:
+        aggregated = pd.read_csv(project_path(args.aggregated))
+        scenario_rows = aggregated[
+            aggregated["log_name"].notna()
+            & (aggregated["scenario"].astype(str) != "final_score")
+            & aggregated["scenario_type"].notna()
+        ]
+        scenario_types = dict(
+            zip(
+                scenario_rows["scenario"].astype(str),
+                scenario_rows["scenario_type"].astype(str),
+            )
+        )
     values = runner["compute_trajectory_runtimes_mean"].astype(float).tolist()
     durations = runner["duration"].astype(float).tolist()
+    slowest = runner.sort_values("compute_trajectory_runtimes_mean", ascending=False).head(5)
 
     summary = {
         "num_scenarios": len(values),
@@ -72,6 +93,26 @@ def main() -> None:
             lines.append(f"| {key} | {int(value)} |")
         else:
             lines.append(f"| {key} | {value:.4f} |")
+    lines.extend(
+        [
+            "",
+            "## Slowest scenarios",
+            "",
+            "| Rank | Scenario type | Scenario token | Mean runtime | Duration |",
+            "| ---: | --- | --- | ---: | ---: |",
+        ]
+    )
+    for rank, (_, row) in enumerate(slowest.iterrows(), start=1):
+        lines.append(
+            "| {rank} | {scenario_type} | {scenario_name} | {runtime:.4f} s | {duration:.4f} s |".format(
+                rank=rank,
+                scenario_type=row.get("scenario_type", "")
+                or scenario_types.get(str(row.get("scenario_name", "")), ""),
+                scenario_name=row.get("scenario_name", ""),
+                runtime=float(row["compute_trajectory_runtimes_mean"]),
+                duration=float(row["duration"]),
+            )
+        )
     lines.extend(
         [
             "",

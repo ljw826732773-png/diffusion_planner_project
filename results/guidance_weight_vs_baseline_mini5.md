@@ -29,4 +29,4 @@ Candidate: `guidance_w1.0`
 
 - A positive delta means the candidate run scored higher than the baseline on the same scenario token.
 - A zero candidate score usually indicates a hard metric failure such as at-fault collision or time-to-collision violation.
-- This comparison uses the same five mini scenario tokens, so it is useful for debugging guidance behavior, but it is still not a paper-level benchmark.
+- This comparison uses the same 5 mini scenario tokens, so it is useful for debugging guidance behavior, but it is still not a paper-level benchmark.

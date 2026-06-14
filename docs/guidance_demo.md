@@ -100,6 +100,17 @@ The internal collision guidance multiplier was then reduced from `3.0` to `1.0`,
 
 On this mini5 subset, reducing the internal collision weight recovers the stop-sign hard failure and restores the final score to the baseline level. It does not prove that guidance is better than baseline; it shows that the original failure is sensitive to guidance weighting and can be debugged systematically.
 
+## Tuned guidance mini10
+
+The tuned guidance setting was then validated on the existing 10-scenario mini subset.
+
+| Run | Scenarios | Success / Fail | Final score | Collision | TTC | Mean runtime | Median runtime |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| baseline mini10 | 10 | 10 / 0 | 0.9287 | 1.0000 | 1.0000 | 0.4673 s | 0.4327 s |
+| guidance scale 0.5, weight 1.0 mini10 | 10 | 10 / 0 | 0.9293 | 1.0000 | 1.0000 | 4.0871 s | 0.7581 s |
+
+The tuned guidance score is essentially tied with the baseline on this subset. It preserves collision and TTC metrics, but it introduces a runtime outlier: `waiting_for_pedestrian_to_cross` has mean compute runtime `33.7791 s` and simulation duration `5041.2444 s`.
+
 Outputs:
 
 - `results/guidance_mini5_eval_summary.md`
@@ -119,7 +130,11 @@ Outputs:
 - `results/guidance_weight_vs_baseline_mini5.md`
 - `results/guidance_weight_stop_sign_trajectory_comparison.md`
 - `results/guidance_weight_stop_sign_trajectory_comparison.png`
+- `results/guidance_w10_mini10_eval_summary.md`
+- `results/guidance_w10_mini10_eval_latency_summary.md`
+- `results/guidance_w10_vs_baseline_mini10.md`
+- `results/guidance_w10_vs_baseline_mini10.png`
 
 ## Next boundary
 
-The next useful experiment is to validate `guidance_scale=0.5, collision_weight=1.0` on more scenarios, then adjust guidance trigger timing if new failures appear.
+The next useful experiment is to diagnose the `waiting_for_pedestrian_to_cross` runtime outlier, then decide whether guidance should be disabled or weakened under that interaction pattern.
