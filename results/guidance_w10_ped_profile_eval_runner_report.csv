@@ -1,0 +1,2 @@
+succeeded,error_message,start_time,end_time,scenario_name,planner_name,log_name,compute_trajectory_runtimes_mean,compute_trajectory_runtimes_median,compute_trajectory_runtimes_std,duration
+True,,119.700432,489.2622581,e4eb6ff392715216,diffusion_planner,2021.06.09.14.58.55_veh-35_01095_01484,2.3202063503355723,2.179628799999989,0.7731414767608027,369.56182609999996

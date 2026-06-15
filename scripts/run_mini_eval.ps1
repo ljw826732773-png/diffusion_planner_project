@@ -14,6 +14,7 @@ param(
     [double]$GuidanceScale = -1,
     [double]$GuidanceWeight = -1,
     [string]$ScenarioToken = "",
+    [string]$ProfileCsv = "",
     [switch]$SkipSimulation
 )
 
@@ -70,7 +71,8 @@ if (-not $SkipSimulation) {
         -Planner $Planner `
         -GuidanceScale $GuidanceScale `
         -GuidanceWeight $GuidanceWeight `
-        -ScenarioToken $ScenarioToken
+        -ScenarioToken $ScenarioToken `
+        -ProfileCsv $ProfileCsv
 }
 
 python "$PSScriptRoot\summarize_nuplan_results.py" `

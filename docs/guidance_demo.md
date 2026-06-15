@@ -116,6 +116,39 @@ The outlier report adds two important details:
 - The same scenario has baseline mean runtime `0.4761 s`.
 - The tuned guidance median runtime is only `0.7389 s`, so the high mean is likely caused by one or a few very slow planner calls rather than every frame being slow.
 
+## Frame-level runtime profiling
+
+To make the runtime outlier auditable, this project adds an optional frame-level profiler around nuPlan `AbstractPlanner.compute_trajectory`. The simulation scripts accept `-ProfileCsv`, which enables `DP_FRAME_PROFILE_CSV` and records one start/end pair per planner call.
+
+The pedestrian outlier scenario was rerun with:
+
+```powershell
+conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
+  -File .\scripts\run_mini_eval.ps1 `
+  -NuplanDataRoot "D:\nuplan-data\dataset" `
+  -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
+  -NuplanExpRoot "D:\nuplan-data\exp" `
+  -ScenarioBuilder "nuplan_mini" `
+  -ScenarioFilter "one_of_each_scenario_type" `
+  -Worker "sequential" `
+  -LimitTotalScenarios 1 `
+  -ExperimentUid "dp/guidance_w10_ped_profile/model" `
+  -SummaryPrefix "guidance_w10_ped_profile_eval" `
+  -Planner "diffusion_planner_guidance" `
+  -GuidanceScale 0.5 `
+  -GuidanceWeight 1.0 `
+  -ScenarioToken "e4eb6ff392715216" `
+  -ProfileCsv "results\guidance_w10_ped_frame_profile.csv"
+```
+
+Result:
+
+| Run | Frames | Incomplete frames | Mean runtime | Median runtime | P95 runtime | Max runtime | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| pedestrian profile rerun | 149 | 0 | 2.3202 s | 2.1796 s | 2.6455 s | 11.3980 s | 369.5618 s |
+
+This rerun did not reproduce the earlier `5041.2444 s` simulation duration. The slowest frame is iteration `0` at `11.3980 s`, which is more consistent with cold-start overhead than a mid-scenario guidance stall. The result does not close the runtime investigation; it makes the next reruns measurable at frame level.
+
 Outputs:
 
 - `results/guidance_mini5_eval_summary.md`
@@ -138,9 +171,15 @@ Outputs:
 - `results/guidance_w10_mini10_eval_summary.md`
 - `results/guidance_w10_mini10_eval_latency_summary.md`
 - `results/guidance_w10_mini10_runtime_outliers.md`
+- `results/guidance_w10_ped_profile_eval_summary.md`
+- `results/guidance_w10_ped_profile_eval_score_runtime.png`
+- `results/guidance_w10_ped_frame_profile.csv`
+- `results/guidance_w10_ped_frame_profile_summary.md`
+- `results/guidance_w10_ped_frame_profile_summary.csv`
+- `results/guidance_w10_ped_frame_profile.png`
 - `results/guidance_w10_vs_baseline_mini10.md`
 - `results/guidance_w10_vs_baseline_mini10.png`
 
 ## Next boundary
 
-The next useful experiment is frame-level profiling for `waiting_for_pedestrian_to_cross`, then deciding whether guidance should be disabled, clipped, or weakened under that interaction pattern.
+The next useful experiment is repeated frame-level profiling for `waiting_for_pedestrian_to_cross` and a larger mini subset, then deciding whether guidance should be disabled, clipped, or weakened under that interaction pattern.

@@ -95,11 +95,14 @@
 - 已完成 tuned guidance mini10 验证：10 / 0 成功，final score `0.9293`，baseline mini10 为 `0.9287`。
 - 当前主要问题从 score 退化转为 runtime outlier：`waiting_for_pedestrian_to_cross` mean compute runtime `33.7791 s`。
 - 已完成 runtime outlier 初步诊断：该场景 median runtime `0.7389 s`，baseline mean runtime `0.4761 s`，说明需要定位少数极慢 planner call。
+- 已接入 frame-level profiler，并对 pedestrian scenario token `e4eb6ff392715216` 做单场景复跑：149 帧完成，0 个 incomplete frame，mean runtime `2.3202 s`，median runtime `2.1796 s`，max runtime `11.3980 s`。
+- 这次单场景复跑没有复现前一次 `5041.2444 s` duration 的极端 outlier，因此下一步重点从“第一次定位”变成“重复复跑确认可复现性”。
 
 后续方向:
 
-- 对 `waiting_for_pedestrian_to_cross` 做 frame-level profiling，记录每次 `compute_trajectory` 的耗时。
+- 对 `waiting_for_pedestrian_to_cross` 做多次 frame-level profiling 复跑，记录每次 `compute_trajectory` 的耗时分布。
 - 检查该场景的 guidance 梯度计算是否在某一帧遇到异常距离、异常 actor 组合或数值不稳定。
+- 将 profiler 接入更大 mini subset，自动标记 slow frame、scenario type 和 guidance 配置。
 - 如果新的失败集中在特定类型，继续调 collision guidance 的触发时间窗或场景条件。
 - 在调整 guidance 函数后复跑同一组 scale/weight sweep，避免只看单点结果。
 

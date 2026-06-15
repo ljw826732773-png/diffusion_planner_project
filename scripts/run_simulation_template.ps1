@@ -12,7 +12,8 @@ param(
     [string]$Planner = "diffusion_planner",
     [double]$GuidanceScale = -1,
     [double]$GuidanceWeight = -1,
-    [string]$ScenarioToken = ""
+    [string]$ScenarioToken = "",
+    [string]$ProfileCsv = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,6 +66,19 @@ if ($GuidanceScale -ge 0) {
 if ($GuidanceWeight -ge 0) {
     $env:DP_COLLISION_GUIDANCE_WEIGHT = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0}", $GuidanceWeight)
     Write-Output "DP_COLLISION_GUIDANCE_WEIGHT=$env:DP_COLLISION_GUIDANCE_WEIGHT"
+}
+if ($ProfileCsv) {
+    python "$PSScriptRoot\enable_frame_profile.py" --repo-root "$NuplanDevkitRoot"
+    if (-not [System.IO.Path]::IsPathRooted($ProfileCsv)) {
+        $ProfileCsv = Join-Path $ProjectRoot $ProfileCsv
+    }
+    $ProfileParent = Split-Path -Parent $ProfileCsv
+    if ($ProfileParent) {
+        New-Item -ItemType Directory -Force -Path $ProfileParent | Out-Null
+    }
+    Remove-Item -Force $ProfileCsv -ErrorAction SilentlyContinue
+    $env:DP_FRAME_PROFILE_CSV = $ProfileCsv
+    Write-Output "DP_FRAME_PROFILE_CSV=$env:DP_FRAME_PROFILE_CSV"
 }
 
 $SimulationArgs = @(

@@ -18,7 +18,7 @@
 | closed-loop smoke test | 1 场景成功，失败 0 |
 | mini closed-loop evaluation | baseline 10 场景成功，失败 0，final weighted score 0.9287 |
 | tuned guidance evaluation | `guidance_scale=0.5, collision_weight=1.0` 已跑 10 场景，final weighted score 0.9293 |
-| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照、scale/weight tuning、失败轨迹复盘和 mini10 tuned guidance 验证 |
+| 结果分析 | 已补低分场景诊断、真实轨迹图、NuBoard 使用说明、sampling steps ablation、CPU smoke benchmark、guidance 对照、scale/weight tuning、失败轨迹复盘、mini10 tuned guidance 验证和 frame-level runtime profiling |
 
 官方来源:
 
@@ -50,6 +50,7 @@
 - 导出 stop-sign guidance 失败场景的跨 scale 轨迹对比图和诊断表。
 - 将 collision guidance 内部 weight 参数化，并验证 `guidance_scale=0.5, collision_weight=1.0` 可以在 mini5 上恢复 stop-sign 场景。
 - 将 tuned guidance 扩展到 10 场景 mini evaluation，验证 final score 与 baseline 基本持平，并记录 runtime outlier。
+- 增加 frame-level profiler，针对 pedestrian runtime outlier 单场景复跑并生成慢帧统计报告。
 
 尚未完成:
 
@@ -111,6 +112,8 @@ Diffusion-Planner 的核心思想:
 │   ├── guidance_weight_vs_default_mini5.md
 │   ├── guidance_weight_vs_default_mini5.png
 │   ├── guidance_w10_mini10_eval_summary.md
+│   ├── guidance_w10_ped_frame_profile_summary.md
+│   ├── guidance_w10_ped_frame_profile.png
 │   ├── guidance_w10_vs_baseline_mini10.md
 │   ├── guidance_w10_vs_baseline_mini10.png
 │   ├── guidance_vs_baseline_mini5.md
@@ -121,6 +124,7 @@ Diffusion-Planner 的核心思想:
 └── scripts
     ├── analyze_mini_eval_low_scores.py
     ├── analyze_planner_latency.py
+    ├── analyze_frame_profile.py
     ├── benchmark_inference.py
     ├── benchmark_sampling_steps.py
     ├── bootstrap_repos.ps1
@@ -129,6 +133,7 @@ Diffusion-Planner 的核心思想:
     ├── compare_eval_runs.py
     ├── download_checkpoint.ps1
     ├── download_nuplan_mini.ps1
+    ├── enable_frame_profile.py
     ├── enable_guidance_scale_override.py
     ├── plot_mini_eval.py
     ├── run_mini_eval.ps1
@@ -633,6 +638,42 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 
 ![guidance tuned mini10 comparison](results/guidance_w10_vs_baseline_mini10.png)
 
+针对 tuned guidance mini10 中的 `waiting_for_pedestrian_to_cross` runtime outlier，又增加了 frame-level profiler。它通过 `DP_FRAME_PROFILE_CSV` 在 nuPlan `AbstractPlanner.compute_trajectory` 外层记录每一帧 planner call 的 start/end 和耗时，运行入口已经接入 `run_mini_eval.ps1`:
+
+```powershell
+conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
+  -File .\scripts\run_mini_eval.ps1 `
+  -NuplanDataRoot "D:\nuplan-data\dataset" `
+  -NuplanMapsRoot "D:\nuplan-data\dataset\maps" `
+  -NuplanExpRoot "D:\nuplan-data\exp" `
+  -ScenarioBuilder "nuplan_mini" `
+  -ScenarioFilter "one_of_each_scenario_type" `
+  -Worker "sequential" `
+  -LimitTotalScenarios 1 `
+  -ExperimentUid "dp/guidance_w10_ped_profile/model" `
+  -SummaryPrefix "guidance_w10_ped_profile_eval" `
+  -Planner "diffusion_planner_guidance" `
+  -GuidanceScale 0.5 `
+  -GuidanceWeight 1.0 `
+  -ScenarioToken "e4eb6ff392715216" `
+  -ProfileCsv "results\guidance_w10_ped_frame_profile.csv"
+```
+
+这次单场景复跑没有复现 mini10 run 中 `5041.2444 s` duration / `33.7791 s` mean runtime 的极端异常，但留下了可复查的逐帧证据:
+
+| Profile run | Frames | Incomplete frames | Mean runtime | Median runtime | P95 runtime | Max runtime | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| guidance tuned pedestrian profile | 149 | 0 | 2.3202 s | 2.1796 s | 2.6455 s | 11.3980 s | 369.5618 s |
+
+![guidance pedestrian frame profile](results/guidance_w10_ped_frame_profile.png)
+
+解释边界:
+
+- 首帧 `iteration=0` 最慢，耗时 `11.3980 s`，更像 cold-start / lazy initialization 开销。
+- 其余慢帧集中在 `2.6-3.0 s`，没有出现上一次 mini10 run 推测的单帧长时间卡住。
+- 因此当前不能断言 outlier 的根因已经找到，只能说明它在这次单场景复跑中没有稳定复现。
+- profiler 已经工程化，后续可以对同一 scenario 做重复复跑，或在更大 scenario subset 中自动抓 slow frame。
+
 结论:
 
 - guidance run 能完整跑通，但在 mini5 上没有提升 final score。
@@ -644,6 +685,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - tuned guidance 在 mini10 上 final score 为 `0.9293`，与 baseline mini10 的 `0.9287` 基本持平，collision/TTC 均保持 `1.0000`。
 - tuned guidance mini10 存在明显 runtime outlier：`waiting_for_pedestrian_to_cross` 场景 mean compute runtime 为 `33.7791 s`，导致整体 mean runtime 被拉高到 `4.0871 s`；median runtime `0.7581 s` 更接近多数场景表现。
 - outlier 诊断显示该场景 median runtime 为 `0.7389 s`，baseline mean runtime 为 `0.4761 s`，但 candidate mean runtime 达到 `33.7791 s`，说明问题更像少数 planner call 卡住，而不是整段场景持续变慢。
+- 单场景 frame profile 复跑未复现极端 outlier，但确认 tuned guidance 在该 pedestrian 场景仍有约 `2.18 s` median runtime，且首帧存在 `11.3980 s` 冷启动峰值。
 - guidance 不是“开了就更好”，需要继续调约束函数、内部权重、触发时机和场景选择。
 
 结果文件:
@@ -666,6 +708,11 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - [results/guidance_w10_mini10_eval_summary.md](results/guidance_w10_mini10_eval_summary.md)
 - [results/guidance_w10_mini10_eval_latency_summary.md](results/guidance_w10_mini10_eval_latency_summary.md)
 - [results/guidance_w10_mini10_runtime_outliers.md](results/guidance_w10_mini10_runtime_outliers.md)
+- [results/guidance_w10_ped_profile_eval_summary.md](results/guidance_w10_ped_profile_eval_summary.md)
+- [results/guidance_w10_ped_profile_eval_score_runtime.png](results/guidance_w10_ped_profile_eval_score_runtime.png)
+- [results/guidance_w10_ped_frame_profile_summary.md](results/guidance_w10_ped_frame_profile_summary.md)
+- [results/guidance_w10_ped_frame_profile_summary.csv](results/guidance_w10_ped_frame_profile_summary.csv)
+- [results/guidance_w10_ped_frame_profile.png](results/guidance_w10_ped_frame_profile.png)
 - [results/guidance_w10_vs_baseline_mini10.md](results/guidance_w10_vs_baseline_mini10.md)
 - [results/guidance_w10_vs_baseline_mini10.png](results/guidance_w10_vs_baseline_mini10.png)
 
@@ -687,6 +734,7 @@ conda run -n diffusion_planner powershell -ExecutionPolicy Bypass `
 - 编写 `compare_eval_runs.py`，对 baseline 和 guidance 的同一批 scenario token 做场景级对比。
 - 编写 `compare_guidance_trajectories.py`，对同一失败场景下不同 guidance scale 的真实执行轨迹做叠加对比。
 - 编写 `analyze_runtime_outliers.py`，把 runner runtime、baseline runtime 和 simulation log 对象数量合并成 outlier 诊断表。
+- 编写 `enable_frame_profile.py` 和 `analyze_frame_profile.py`，把 planner call 级别耗时导出为 CSV、Markdown 和图表，支持 slow frame 复查。
 - 编写 `enable_guidance_scale_override.py` 和 `summarize_guidance_sweep.py`，把 guidance scale 与 collision guidance weight 从源码常量变成可扫描参数，并自动汇总表格和图。
 - 解决 Windows 下 nuPlan 数据结构、路径长度、GIS/PyTorch/NumPy/protobuf 等依赖兼容问题。
 
@@ -730,7 +778,7 @@ Diffusion-Planner 的核心流程:
 - planner 入口可以导入并在 nuPlan mini simulator 中运行。
 - 可以完成 synthetic benchmark、sampling ablation 和 CPU smoke benchmark。
 - 可以在 nuPlan mini 上完成 10 场景 closed-loop nonreactive evaluation。
-- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告、guidance scale/weight tuning、mini10 tuned guidance 验证和失败轨迹复盘。
+- 可以自动汇总 runner report、weighted metrics、低分诊断、延迟摘要、真实场景轨迹图、guidance 对照报告、guidance scale/weight tuning、mini10 tuned guidance 验证、失败轨迹复盘和 frame-level runtime profile。
 
 本项目还不能说明:
 
@@ -739,7 +787,7 @@ Diffusion-Planner 的核心流程:
 - 完成官方 full split 大规模评测。
 - 完成模型训练。
 - guidance 一定优于 baseline；当前 mini5 对照和 scale sweep 显示，较强 guidance 会在 stop-sign 场景中触发 collision/TTC 硬扣分，调低内部 weight 后在 mini10 上也只是与 baseline 基本持平。
-- tuned guidance 已满足实时性；当前 mini10 存在一个 pedestrian 场景 runtime outlier，需要进一步定位。
+- tuned guidance 已满足实时性；当前 mini10 存在一个 pedestrian 场景 runtime outlier，单场景复跑未稳定复现极端卡顿，但 median runtime 仍偏高。
 
 更详细说明见:
 
@@ -751,9 +799,10 @@ Diffusion-Planner 的核心流程:
 
 1. 将 mini evaluation 扩展到 15 个以上场景，并固定随机种子和 scenario list。
 2. 对 `diffusion_steps=5/10/20/50` 分别跑 closed-loop mini metrics，补质量-速度曲线。
-3. 对 `waiting_for_pedestrian_to_cross` 做 frame-level profiling，定位具体是哪一次 planner call 导致 tuned guidance runtime outlier。
-4. 把真实轨迹可视化扩展到多场景批量导出，并加入地图 lane layer。
-5. 如果硬件和时间允许，再尝试 Val14 子集或更大规模 benchmark。
+3. 对 `waiting_for_pedestrian_to_cross` 做多次 frame-level profiling 复跑，确认 runtime outlier 是否可复现。
+4. 把 frame profiler 扩展到更大 mini subset，自动标记 slow frame、scenario type 和 guidance 配置。
+5. 把真实轨迹可视化扩展到多场景批量导出，并加入地图 lane layer。
+6. 如果硬件和时间允许，再尝试 Val14 子集或更大规模 benchmark。
 
 更多计划见:
 
